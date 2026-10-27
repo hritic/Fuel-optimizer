@@ -1,0 +1,21 @@
+[project]
+name = "fuel-optimizer-api"
+version = "0.1.0"
+description = "High-performance fuel optimization routing engine"
+readme = "README.md"
+requires-python = ">=3.12"
+dependencies = [
+    "django==6.1.2",
+    "djangorestframework>=3.18.3",
+    "requests>=2.34.2",
+    "redis>=8.1.0",
+    "django-redis>=7.0.0",
+    "gunicorn>=26.2.0",
+]
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.uv]
+allow-insecure-host = ["pypi.org", "files.pythonhosted.org"]

@@ -1,0 +1,49 @@
+services:
+  web:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: fuel_api_worker
+    ports:
+      - "8000:8000"
+    volumes:
+      - sqlite_data:/app/db_volume
+    environment:
+      - DJANGO_SECRET_KEY=${DJANGO_SECRET_KEY:-test-only-secret-key}
+      - DEBUG=False
+      - DJANGO_ALLOWED_HOSTS=${DJANGO_ALLOWED_HOSTS:-localhost,127.0.0.1}
+      - REDIS_URL=redis://redis_cache:6379/1
+      - NOMINATIM_USER_AGENT=${NOMINATIM_USER_AGENT:-fuel-optimizer-api/1.0}
+      - NOMINATIM_CONTACT_EMAIL=${NOMINATIM_CONTACT_EMAIL:-}
+      - NOMINATIM_BASE_URL=${NOMINATIM_BASE_URL:-https://nominatim.openstreetmap.org}
+      - OSRM_BASE_URL=${OSRM_BASE_URL:-https://router.project-osrm.org}
+      - VEHICLE_RANGE_MILES=${VEHICLE_RANGE_MILES:-500}
+      - VEHICLE_MILES_PER_GALLON=${VEHICLE_MILES_PER_GALLON:-10}
+      - FUEL_RESERVE_MILES=${FUEL_RESERVE_MILES:-50}
+      - FUEL_STATION_CORRIDOR_MILES=${FUEL_STATION_CORRIDOR_MILES:-4}
+      - ORIGIN_PRICE_SEARCH_MILES=${ORIGIN_PRICE_SEARCH_MILES:-25}
+      - ROUTE_PLANNER_LOG_LEVEL=${ROUTE_PLANNER_LOG_LEVEL:-INFO}
+    depends_on:
+      - redis_cache
+    restart: always
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8000/api/health/', timeout=3)"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 20s
+
+  redis_cache:
+    image: redis:7-alpine
+    container_name: fuel_api_cache
+    expose:
+      - "6379"
+    restart: always
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+
+volumes:
+  sqlite_data:
